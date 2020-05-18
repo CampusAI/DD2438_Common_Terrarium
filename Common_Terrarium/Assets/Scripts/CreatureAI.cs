@@ -17,17 +17,18 @@ namespace Assets.Scripts
     {
         private Creature creature;
         private int n_regions = 6;
+        private int last_reproduced = 0;
 
         public void Start()
         {
-            Debug.Log($"Creature AI is ready");
+            Debug.Log($"Creature RL is ready");
             creature = GetComponent<Creature>();
+            last_reproduced = Time.frameCount;
         }
 
 
         public override void OnEpisodeBegin()
         {
-
         }
 
         public float[] GetSurroundingInfo()
@@ -38,7 +39,7 @@ namespace Assets.Scripts
             foreach (GameObject plant in close_plants)
             {
                 Vector3 relative_pos = plant.transform.position - this.transform.position;
-                float angle = Vector3.SignedAngle(this.transform.forward, relative_pos) - angle_offset;
+                float angle = Vector3.SignedAngle(this.transform.forward, relative_pos, Vector3.up) - angle_offset;
 
                 int region = (n_regions / 2) + (int)(angle * n_regions / 360f);
                 surroundings[region] = 1;
@@ -62,23 +63,32 @@ namespace Assets.Scripts
 
         public override void OnActionReceived(float[] vectorAction)
         {
-            int x_dir = vectorAction[0];  // X direction     (-1, 0, 1)
-            int z_dir = vectorAction[1];  // Z direction     (-1, 0, 1)
-            int speed = vectorAction[2];  // Movement speed  (1, 2, 3)  # slow medium fast
-            int reproduce = vectorAction[3];  // Reproduce   (0, 1)  No, Yes
+            float x_dir = vectorAction[0];  // X direction     (-1, 0, 1)
+            float z_dir = vectorAction[1];  // Z direction     (-1, 0, 1)
+            float speed = vectorAction[2];  // Movement speed  (1, 2, 3)  # slow medium fast
+            float reproduce = vectorAction[3];  // Reproduce   (0, 1)  No, Yes
             float movement_speed = (((float)speed) / 3f);
             Vector3 direction = new Vector3(x_dir, 0, z_dir);
             creature.Move(direction, movement_speed);
-            if (reproduce == 1)
+            if (reproduce == 1 && last_reproduced + 30 < Time.frameCount)
             {
+                last_reproduced = Time.frameCount;
                 creature.Reproduce();
             }
         }
 
+        
         public override void Heuristic(float[] actionsOut)
         {
             actionsOut[0] = Input.GetAxis("Horizontal");
             actionsOut[1] = Input.GetAxis("Vertical");
+            actionsOut[2] = 3;
+            actionsOut[3] = 0;
+            if (Input.GetKey(KeyCode.Space)) {
+                Debug.LogError(this);
+                actionsOut[3] = 1f;
+            }
+                
         }
         // public void Update()
         // {
@@ -114,6 +124,7 @@ namespace Assets.Scripts
         /// range to eat some food, adapted to your regime of course.
         public virtual void OnAccessibleFood(GameObject food)  // For now lets always eat
         {
+            Debug.LogError("eating");
             creature.Eat(food);
             if (creature.Energy > 0.2 * creature.MaxEnergy && UnityEngine.Random.Range(0, 1) < 0.1f) creature.Reproduce();
         }

@@ -63,3 +63,5 @@ Common_Terrarium/Library/ShaderCache/*
 Common_Terrarium/Library/metadata/*
 Common_Terrarium/.vscode/
 *.log
+
+Common_Terrarium/Temp/*
