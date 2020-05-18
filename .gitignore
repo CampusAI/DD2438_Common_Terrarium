@@ -59,7 +59,7 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
-Common_Terrarium/Library/ShaderCache/
-Common_Terrarium/Library/metadata/
+Common_Terrarium/Library/ShaderCache/*
+Common_Terrarium/Library/metadata/*
 Common_Terrarium/.vscode/
 *.log
